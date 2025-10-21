@@ -85,7 +85,7 @@ const Home = () => {
     <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center justify-start py-12 px-6">
       {/* Title */}
       <div className="text-center mb-8">
-        <h1 className="text-5xl font-extrabold text-blue-400 mb-2">Water You Doing?💧</h1>
+        <h1 className="text-4xl line-clamp-none font-bold text-blue-400 mb-3">Water You Doing?💧</h1>
         <p className="text-xl text-blue-200">Stay hydrated, you beautiful dehydrated disaster!</p>
       </div>
 
