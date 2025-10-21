@@ -1,7 +1,18 @@
 import type { NextConfig } from "next";
+// @ts-ignore
+import withPWA from "next-pwa"
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  reactStrictMode: true,
+  // other Next.js config options
 };
 
-export default nextConfig;
+// Wrap with PWA
+export default withPWA({
+  ...nextConfig,
+  pwa: {
+    dest: "public", // service worker location
+    register: true, // auto register service worker
+    skipWaiting: true, // activate new SW immediately
+  },
+});
