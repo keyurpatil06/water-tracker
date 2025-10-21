@@ -12,11 +12,13 @@ interface WaterData {
   dailyGoal: number
   notificationsOn: boolean
   history: Record<string, number>
+  totalGlasses: number
 }
 
 const Home = () => {
   const [glasses, setGlasses] = useState(0)
   const [dailyGoal, setDailyGoal] = useState(12)
+  const [totalGlasses, setTotalGlasses] = useState(0)
   const [notificationsOn, setNotificationsOn] = useState(true)
   const [weeklyData, setWeeklyData] = useState<{ day: string; glasses: number }[]>([])
 
@@ -29,44 +31,41 @@ const Home = () => {
       const data: WaterData = JSON.parse(dataStr)
       setDailyGoal(data.dailyGoal)
       setNotificationsOn(data.notificationsOn)
+      setTotalGlasses(data.totalGlasses || 0)
 
-      // Ensure history exists
       const history = data.history || {}
-
       setGlasses(history[today] || 0)
       updateWeeklyData(history)
     } else {
-      // Initialize localStorage if nothing exists
-      const data: WaterData = { dailyGoal, notificationsOn, history: {} }
+      const data: WaterData = { dailyGoal, notificationsOn, history: {}, totalGlasses: 0 }
       localStorage.setItem("waterTracker", JSON.stringify(data))
     }
   }, [])
 
-  // Save to localStorage whenever glasses, dailyGoal, or notificationsOn change
+  // Save to localStorage whenever relevant data changes
   useEffect(() => {
     const dataStr = localStorage.getItem("waterTracker")
     const data: WaterData = dataStr
       ? JSON.parse(dataStr)
-      : { dailyGoal, notificationsOn, history: {} }
+      : { dailyGoal, notificationsOn, history: {}, totalGlasses: 0 }
 
-    // Ensure history exists
     if (!data.history) data.history = {}
 
     data.dailyGoal = dailyGoal
     data.notificationsOn = notificationsOn
     data.history[today] = glasses
+    data.totalGlasses = totalGlasses
 
     localStorage.setItem("waterTracker", JSON.stringify(data))
     updateWeeklyData(data.history)
-  }, [glasses, dailyGoal, notificationsOn, today])
+  }, [glasses, dailyGoal, notificationsOn, totalGlasses, today])
 
-  // Update weekly chart data
   const updateWeeklyData = (history: Record<string, number>) => {
     const days: { day: string; glasses: number }[] = []
     for (let i = 6; i >= 0; i--) {
       const date = new Date()
       date.setDate(date.getDate() - i)
-      const dayName = date.toLocaleDateString("en-US", { weekday: "short" }) // Mon, Tue, ...
+      const dayName = date.toLocaleDateString("en-US", { weekday: "short" })
       const dateStr = date.toISOString().split("T")[0]
       days.push({ day: dayName, glasses: history[dateStr] || 0 })
     }
@@ -74,7 +73,8 @@ const Home = () => {
   }
 
   const handleAddGlass = () => {
-    if (glasses < dailyGoal) setGlasses(glasses + 1)
+    setGlasses(glasses + 1)
+    setTotalGlasses(totalGlasses + 1)
   }
 
   const handleReset = () => setGlasses(0)
@@ -109,7 +109,8 @@ const Home = () => {
       {/* Circular Progress */}
       <div className="mb-6 flex flex-col items-center">
         <CircularProgress progress={progress} size={160} strokeWidth={14} />
-        <p className="mt-4 text-blue-200 font-medium text-lg">{glasses}/{dailyGoal} glasses</p>
+        <p className="mt-4 text-blue-200 font-medium text-lg">{glasses}/{dailyGoal} glasses today</p>
+        <p className="text-blue-400 font-medium text-md mt-1">Total {totalGlasses} glasses drank today!</p>
       </div>
 
       {/* Add / Reset Buttons */}
@@ -123,7 +124,7 @@ const Home = () => {
       </div>
 
       {/* Notifications */}
-      <div className="flex items-center gap-4 bg-gray-800 p-4 rounded-xl shadow-sm w-full max-w-md justify-between mb-10">
+      {/* <div className="flex items-center gap-4 bg-gray-800 p-4 rounded-xl shadow-sm w-full max-w-md justify-between mb-10">
         <Label htmlFor="notifications" className="text-blue-200 font-medium text-lg">Notifications</Label>
         <Switch
           id="notifications"
@@ -131,7 +132,7 @@ const Home = () => {
           onCheckedChange={(checked) => setNotificationsOn(checked)}
           className={`${notificationsOn ? "bg-blue-500" : "bg-gray-600"}`}
         />
-      </div>
+      </div> */}
 
       {/* Weekly Chart */}
       <div className="bg-blue-950 p-6 rounded-2xl shadow-lg w-full max-w-2xl">
