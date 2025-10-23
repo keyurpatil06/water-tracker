@@ -1,12 +1,9 @@
 "use client"
 
-import CircularProgress from "@/components/CircularProgress"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
+import DailyGoal from "@/components/DailyGoal"
+import NotificationToggle from "@/components/NotificationToggle"
+import WeeklyChart from "@/components/WeeklyChart "
 import { useEffect, useState } from "react"
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 
 interface WaterData {
   dailyGoal: number
@@ -19,7 +16,7 @@ const Home = () => {
   const [glasses, setGlasses] = useState(0)
   const [dailyGoal, setDailyGoal] = useState(12)
   const [totalGlasses, setTotalGlasses] = useState(0)
-  const [notificationsOn, setNotificationsOn] = useState(true)
+  const [notificationsOn, setNotificationsOn] = useState(false)
   const [weeklyData, setWeeklyData] = useState<{ day: string; glasses: number }[]>([])
 
   const today = new Date().toISOString().split("T")[0]
@@ -77,7 +74,10 @@ const Home = () => {
     setTotalGlasses(totalGlasses + 1)
   }
 
-  const handleReset = () => setGlasses(0)
+  const handleReset = () => {
+    setGlasses(0)
+    setTotalGlasses(0)
+  }
 
   const progress = Math.min((glasses / dailyGoal) * 100, 100)
 
@@ -89,64 +89,23 @@ const Home = () => {
         <p className="text-xl text-blue-200">Stay hydrated, you beautiful dehydrated disaster!</p>
       </div>
 
-      {/* Daily Goal Input */}
-      <div className="mb-10 flex flex-col sm:flex-row items-center gap-4 bg-blue-950 p-6 rounded-2xl shadow-lg w-full max-w-md">
-        <Label htmlFor="dailygoal" className="font-semibold text-lg text-blue-200 min-w-[150px]">
-          Daily Goal (glasses)
-        </Label>
-        <Input
-          type="number"
-          id="dailygoal"
-          min={1}
-          value={dailyGoal}
-          onChange={(e) => setDailyGoal(Number(e.target.value))}
-          className="w-24 bg-gray-800 text-white border-blue-500 focus:border-blue-400 focus:ring focus:ring-blue-400 
-             appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none 
-             [&::-moz-appearance]:textfield"
-        />
-      </div>
+      <DailyGoal
+        dailyGoal={dailyGoal}
+        glasses={glasses}
+        progress={progress}
+        totalGlasses={totalGlasses}
+        setDailyGoal={setDailyGoal}
+        handleAddGlass={handleAddGlass}
+        handleReset={handleReset}
+      />
 
-      {/* Circular Progress */}
-      <div className="mb-6 flex flex-col items-center">
-        <CircularProgress progress={progress} size={160} strokeWidth={14} />
-        <p className="mt-4 text-blue-200 font-medium text-lg">{glasses}/{dailyGoal} glasses today</p>
-        <p className="text-blue-400 font-medium text-md mt-1">Total {totalGlasses} glasses drank today!</p>
-      </div>
+      <NotificationToggle
+        notificationsOn={notificationsOn}
+        setNotificationsOn={setNotificationsOn}
+      />
 
-      {/* Add / Reset Buttons */}
-      <div className="flex gap-6 mb-8">
-        <Button className="bg-blue-500 hover:bg-blue-400 text-black font-semibold px-6 py-3 rounded-xl shadow-md transition-all duration-200" onClick={handleAddGlass}>
-          Add Glass
-        </Button>
-        <Button className="bg-gray-700 hover:bg-gray-600 text-white font-semibold px-6 py-3 rounded-xl shadow-md transition-all duration-200" onClick={handleReset}>
-          Reset
-        </Button>
-      </div>
+      <WeeklyChart weeklyData={weeklyData} />
 
-      {/* Notifications */}
-      {/* <div className="flex items-center gap-4 bg-gray-800 p-4 rounded-xl shadow-sm w-full max-w-md justify-between mb-10">
-        <Label htmlFor="notifications" className="text-blue-200 font-medium text-lg">Notifications</Label>
-        <Switch
-          id="notifications"
-          checked={notificationsOn}
-          onCheckedChange={(checked) => setNotificationsOn(checked)}
-          className={`${notificationsOn ? "bg-blue-500" : "bg-gray-600"}`}
-        />
-      </div> */}
-
-      {/* Weekly Chart */}
-      <div className="bg-blue-950 p-6 rounded-2xl shadow-lg w-full max-w-2xl">
-        <h2 className="text-blue-200 text-xl font-semibold mb-4">Weekly Water Intake</h2>
-        <ResponsiveContainer width="100%" height={250}>
-          <LineChart data={weeklyData}>
-            <CartesianGrid stroke="#374151" strokeDasharray="3 3" />
-            <XAxis dataKey="day" stroke="#93C5FD" />
-            <YAxis stroke="#93C5FD" />
-            <Tooltip contentStyle={{ backgroundColor: '#1e293b', borderRadius: '8px', border: 'none' }} />
-            <Line type="monotone" dataKey="glasses" stroke="#3B82F6" strokeWidth={3} activeDot={{ r: 6 }} />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
     </div>
   )
 }
